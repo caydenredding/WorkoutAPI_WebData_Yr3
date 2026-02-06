@@ -8,7 +8,7 @@ Choose stack: FastAPI + SQLite/PostgreSQL (FastAPI for RESTful endpoints + auto-
 
 Set up project repo, virtual environment [x]
 
-Sketch database schema: users, exercises, workout_logs 
+Sketch database schema: users, exercises, workout_logs [x]
 
 Import public exercise dataset (e.g., exercises.json or Wger API) [x]
 
