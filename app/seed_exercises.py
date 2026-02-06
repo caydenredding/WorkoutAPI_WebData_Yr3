@@ -4,7 +4,7 @@ from models import Exercise
 from database import SessionLocal, engine, Base
 
 JSON_FILE = "../data/exercises.json"
-FILTER_MUSCLES = ["chest", "back", "legs", "shoulders", "arms", "core"]
+FILTER_MUSCLES = ["chest", "back", "legs", "shoulders", "arms", "abs"]
 
 # Create Table if doesnt exist
 Base.metadata.create_all(bind=engine)
