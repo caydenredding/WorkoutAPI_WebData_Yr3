@@ -1,0 +1,236 @@
+Cayden’s 3-Week Distinction-Level Plan for the Workout Logging API
+Week 1 – Foundations & Core CRUD
+Day 1–2: Plan & set up project
+
+Tasks:
+
+Choose stack: FastAPI + SQLite/PostgreSQL (FastAPI for RESTful endpoints + auto-generated OpenAPI docs)
+
+Set up project repo, virtual environment
+
+Sketch database schema: users, exercises, workout_logs
+
+Import public exercise dataset (e.g., exercises.json or Wger API)
+
+Rubric relevance:
+
+Shows research curiosity (selection of stack and datasets)
+
+Novel data integration (importing public dataset)
+
+Lays groundwork for publication-quality documentation (OpenAPI + ER diagram)
+
+AI usage ideas:
+
+Use AI to generate initial ER diagrams or database schema suggestions
+Example: “Generate a normalized database schema for a workout logging API with exercises, users, and logs.”
+
+Day 3–5: Implement core CRUD
+
+Tasks:
+
+Implement Users CRUD endpoints (POST, GET, PATCH, DELETE)
+
+Implement Workout Logs CRUD endpoints
+
+Implement Exercise endpoints (read-only if dataset imported)
+
+Validate inputs, implement correct HTTP status codes
+
+Rubric relevance:
+
+Covers all four CRUD operations
+
+Shows understanding of data validation and error handling
+
+Clean, professional API design for high marks
+
+AI usage ideas:
+
+Use AI to generate example JSON payloads and responses for documentation
+
+Example prompt: “Generate realistic workout log JSON examples for 3 different exercises.”
+
+Day 6–7: Test core CRUD
+
+Tasks:
+
+Test endpoints using Postman / FastAPI Swagger UI
+
+Fix bugs
+
+Make sure JSON responses are consistent
+
+Rubric relevance:
+
+Demonstrates professional-grade polish
+
+Prepares for presentation/demo
+
+AI usage ideas:
+
+Use AI to auto-generate test cases for your endpoints
+Example: “Create 10 edge-case JSON test inputs for a workout logging API.”
+
+Week 2 – Analytics & AI Integration
+Day 8–10: Add analytics endpoints
+
+Tasks:
+
+Calculate PR (max weight) and volume per exercise
+
+Implement /users/{id}/insights endpoint returning human-readable progress summaries
+
+Optional: trend calculations (e.g., weight progression over time)
+
+Rubric relevance:
+
+Shows expert-level analysis and cutting-edge thinking
+
+Moves beyond simple CRUD → high marks
+
+AI usage ideas:
+
+Use GPT-style AI to generate natural-language summaries of progress
+Example: “Summarize the user’s Squat and Bench Press progress over the past month.”
+
+Day 11–12: Add AI-powered creative endpoints
+
+Tasks:
+
+/users/{id}/generate-plan: AI generates weekly workout schedule based on user history and goals
+
+/users/{id}/exercise-variations: AI suggests alternative exercises to target the same muscle groups
+
+Rubric relevance:
+
+Creative application of generative AI
+
+Demonstrates innovation and originality
+
+Clearly “reimagines cutting-edge solutions” by using AI for adaptive planning and personalization
+
+AI usage ideas:
+
+AI model can be prompted with user data and dataset metadata to output plans
+
+Responses can include sets/reps/weights, or even recommendation notes
+
+Day 13–14: Test and refine AI endpoints
+
+Tasks:
+
+Test AI outputs with multiple user scenarios
+
+Make sure output JSON is clean and consistent
+
+Add error handling for invalid inputs (e.g., AI cannot generate plan for a non-existent user)
+
+Rubric relevance:
+
+Professional-grade polish
+
+Ensures publication-quality documentation
+
+Shows ability to handle edge cases
+
+AI usage ideas:
+
+AI can also generate sample requests/responses for docs
+Example: “Generate 3 example weekly workout plans for a user who trains 4 days/week.”
+
+Week 3 – Documentation, Presentation, & Polish
+Day 15–17: Create high-quality documentation
+
+Tasks:
+
+Auto-generate OpenAPI docs (FastAPI)
+
+Include:
+
+JSON examples for all endpoints
+
+Error codes
+
+ER diagram + workflow diagram
+
+Explain AI-powered endpoints in detail
+
+Rubric relevance:
+
+Covers publication-quality documentation
+
+Supports exceptional originality (workflow diagrams showing AI integration)
+
+AI usage ideas:
+
+Use AI to draft report sections or explain endpoint logic
+
+Generate diagrams (mermaid.js, draw.io JSON) from schema
+
+Example prompt: “Explain the workflow of an AI-powered weekly workout generator endpoint in simple terms for a report.”
+
+Day 18–19: Create presentation + demo
+
+Tasks:
+
+Prepare slides:
+
+ER diagram, API endpoints, sample JSON outputs
+
+AI-powered endpoints highlighted
+
+Workflow of user → API → AI → response
+
+Prepare live demo:
+
+Create user
+
+Log workouts
+
+Call AI endpoints
+
+Show insights
+
+Rubric relevance:
+
+Covers presentation quality (15%)
+
+Shows visual communication with JSON outputs and diagrams
+
+Inspirational delivery with live demo
+
+AI usage ideas:
+
+Generate slide content or speaker notes
+
+Generate visual explanations for AI features
+
+Day 20–21: Final buffer + testing
+
+Tasks:
+
+Deploy API locally or on PythonAnywhere/Heroku
+
+Final testing of all endpoints
+
+Polish documentation and slides
+
+Practice Q&A (anticipate questions about AI integration, schema choices)
+
+Rubric relevance:
+
+Ensures professional-grade polish
+
+Supports expert-level analysis
+
+Leaves room to fix last-minute issues → reduces stress for presentation
+
+AI usage ideas:
+
+Use AI to simulate potential questions and answers for Q&A section
+
+Example prompt: “What are common technical questions about a generative AI workout API and how to answer them?”
+
+
+This plan was generated using ChatGPT to explore ideas and formulate them into a coursework friendly schedule of how to tackle this problem.
