@@ -4,13 +4,13 @@ Day 1–2: Plan & set up project
 
 Tasks:
 
-Choose stack: FastAPI + SQLite/PostgreSQL (FastAPI for RESTful endpoints + auto-generated OpenAPI docs)
+Choose stack: FastAPI + SQLite/PostgreSQL (FastAPI for RESTful endpoints + auto-generated OpenAPI docs) [x]
 
-Set up project repo, virtual environment
+Set up project repo, virtual environment [x]
 
-Sketch database schema: users, exercises, workout_logs
+Sketch database schema: users, exercises, workout_logs 
 
-Import public exercise dataset (e.g., exercises.json or Wger API)
+Import public exercise dataset (e.g., exercises.json or Wger API) [x]
 
 Rubric relevance:
 
