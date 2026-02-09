@@ -1,4 +1,4 @@
-from sqlalchemy import Column, Integer, String, ForeignKey, DateTime
+from sqlalchemy import Column, Integer, String, ForeignKey, DateTime, Float
 from sqlalchemy.orm import relationship
 from database import Base
 
@@ -35,7 +35,7 @@ class ExerciseLog(Base):
     exercise_id = Column(Integer, ForeignKey("exercises.id"))
     sets = Column(Integer, nullable=False)
     reps = Column(Integer, nullable=False)
-    weight = Column(Integer, nullable=False)
+    weight = Column(Float, nullable=False)
     
     
     workout = relationship("WorkoutLog", back_populates="exercise_logs")
