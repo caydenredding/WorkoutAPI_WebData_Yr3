@@ -26,7 +26,7 @@ class WorkoutLog(Base):
     date = Column(DateTime)
     
     user = relationship("User", back_populates="workouts")
-    exercise_logs = relationship("ExerciseLog", back_populates="workouts")
+    exercise_logs = relationship("ExerciseLog", back_populates="workout")
     
 class ExerciseLog(Base):
     __tablename__ = "exercise_logs"
