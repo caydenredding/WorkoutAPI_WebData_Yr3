@@ -1,4 +1,4 @@
-from sqlalchemy import Column, Integer, String, ForeignKey, DateTime, Float
+from sqlalchemy import Column, Integer, String, ForeignKey, Date, Float
 from sqlalchemy.orm import relationship
 from database import Base
 
@@ -23,7 +23,7 @@ class WorkoutLog(Base):
     __tablename__ = "workout_logs"
     id = Column(Integer, primary_key=True, index=True)
     user_id = Column(Integer, ForeignKey("users.id"))
-    date = Column(DateTime)
+    date = Column(Date)
     
     user = relationship("User", back_populates="workouts")
     exercise_logs = relationship("ExerciseLog", back_populates="workout")
