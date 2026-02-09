@@ -15,7 +15,7 @@ class Exercise(Base):
 class User(Base):
     __tablename__ = "users"
     id = Column(Integer, primary_key=True, index=True)
-    username = Column(String, nullable=False)
+    username = Column(String, nullable=False, unique=True)
     
     workouts = relationship("WorkoutLog", back_populates="user")
 
@@ -25,7 +25,7 @@ class WorkoutLog(Base):
     user_id = Column(Integer, ForeignKey("users.id"))
     date = Column(DateTime)
     
-    users = relationship("User", back_populates="workouts")
+    user = relationship("User", back_populates="workouts")
     exercise_logs = relationship("ExerciseLog", back_populates="workouts")
     
 class ExerciseLog(Base):
@@ -33,13 +33,13 @@ class ExerciseLog(Base):
     id = Column(Integer, primary_key=True, index=True)
     workout_id = Column(Integer, ForeignKey("workout_logs.id"))
     exercise_id = Column(Integer, ForeignKey("exercises.id"))
-    sets = Column(Integer)
-    reps = Column(Integer)
-    weight = Column(Integer)
+    sets = Column(Integer, nullable=False)
+    reps = Column(Integer, nullable=False)
+    weight = Column(Integer, nullable=False)
     
     
-    workouts = relationship("WorkoutLog", back_populates="exercise_logs")
-    exercises = relationship("Exercise")
+    workout = relationship("WorkoutLog", back_populates="exercise_logs")
+    exercise = relationship("Exercise")
     
     
     
