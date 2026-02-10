@@ -20,7 +20,6 @@ router = APIRouter()
 )
 def create_user(user: schemas.UserCreate, db: Session = Depends(get_db)):
     new_user = models.User(username=user.username)
-    
     db.add(new_user)
     try:
         db.commit()
