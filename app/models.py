@@ -1,6 +1,6 @@
 from sqlalchemy import Column, Integer, String, ForeignKey, Date, Float
 from sqlalchemy.orm import relationship
-from database import Base
+from app.database import Base
 
 # Table of all exercises
 class Exercise(Base):
@@ -17,22 +17,22 @@ class User(Base):
     id = Column(Integer, primary_key=True, index=True)
     username = Column(String, nullable=False, unique=True)
     
-    workouts = relationship("WorkoutLog", back_populates="user")
+    workouts = relationship("WorkoutLog", back_populates="user", cascade="all, delete-orphan")
 
 class WorkoutLog(Base):
     __tablename__ = "workout_logs"
     id = Column(Integer, primary_key=True, index=True)
-    user_id = Column(Integer, ForeignKey("users.id"))
-    date = Column(Date)
+    user_id = Column(Integer, ForeignKey("users.id", ondelete="CASCADE"), nullable=False)
+    date = Column(Date, nullable=False)
     
     user = relationship("User", back_populates="workouts")
-    exercise_logs = relationship("ExerciseLog", back_populates="workout")
+    exercise_logs = relationship("ExerciseLog", back_populates="workout", cascade="all, delete-orphan")
     
 class ExerciseLog(Base):
     __tablename__ = "exercise_logs"
     id = Column(Integer, primary_key=True, index=True)
-    workout_id = Column(Integer, ForeignKey("workout_logs.id"))
-    exercise_id = Column(Integer, ForeignKey("exercises.id"))
+    workout_id = Column(Integer, ForeignKey("workout_logs.id", ondelete="CASCADE"), nullable=False)
+    exercise_id = Column(Integer, ForeignKey("exercises.id"), nullable=False)
     sets = Column(Integer, nullable=False)
     reps = Column(Integer, nullable=False)
     weight = Column(Float, nullable=False)
