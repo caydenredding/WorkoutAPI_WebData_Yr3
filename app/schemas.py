@@ -75,19 +75,22 @@ class WorkoutOut(WorkoutBase):
 
 # -- Exercise Logs --
 
-class ExerciseLogCreate(BaseModel):
-    exercise_id: int
+class ExerciseLogBase(BaseModel):
     sets: int = Field(..., gt=0)
     reps: int = Field(..., gt=0)
     weight: float = Field(..., ge=0)
+
+class ExerciseLogCreate(ExerciseLogBase):
+    exercise_id: int
 
 class ExerciseLogUpdate(BaseModel):
     sets: Optional[int] = Field(None, gt=0)
     reps: Optional[int] = Field(None, gt=0)
     weight: Optional[float] = Field(None, ge=0)
     
-class ExerciseLogOut(ExerciseLogCreate):
+class ExerciseLogOut(ExerciseLogBase):
     id: int
     workout_id: int
+    exercise: ExerciseOut
 
     model_config = ConfigDict(from_attributes=True)
