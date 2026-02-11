@@ -1,21 +1,24 @@
 from fastapi import FastAPI
-from app.database import engine, Base
-from app import models
-from app.routers import users, exercises, workouts, exercise_logs, muscles, equipment, sets
 
-Base.metadata.create_all(bind=engine)
+from app.routers.training import router as training_router
+from app.routers.catalog import router as catalog_router
+from app.routers.users import router as users_router
+from app.routers.analytics import router as analytics_router 
 
-app = FastAPI(title="Workout Tracker API")
+app = FastAPI(
+    title="Gym API",
+    version="0.1.0",
+)
 
-app.include_router(users.router, prefix="/users", tags=["Users"])
-app.include_router(exercises.router, prefix="/exercises", tags=["Exercises"])
-app.include_router(workouts.router, tags=["Workouts"])
-app.include_router(exercise_logs.router, tags=["Exercise Logs"])
-app.include_router(muscles.router, prefix="/muscles", tags=["Muscles"])
-app.include_router(equipment.router, prefix="/equipment", tags=["Equipment"])
-app.include_router(sets.router, tags=["Sets"])
+app.include_router(training_router)
+app.include_router(catalog_router)
+app.include_router(users_router)
+app.include_router(analytics_router)
 
 
-@app.get("/")
-def root():
-    return {"status": "API running"}
+@app.get(
+    "/health",
+    tags=["health"],
+)
+def health():
+    return {"status": "ok"}
