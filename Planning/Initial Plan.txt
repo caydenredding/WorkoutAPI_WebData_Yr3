@@ -29,13 +29,13 @@ Day 3–5: Implement core CRUD
 
 Tasks:
 
-Implement Users CRUD endpoints (POST, GET, PATCH, DELETE)
+Implement Users CRUD endpoints (POST, GET, PATCH, DELETE) [x]
 
-Implement Workout Logs CRUD endpoints
+Implement Workout Logs CRUD endpoints [x]
 
-Implement Exercise endpoints (read-only if dataset imported)
+Implement Exercise endpoints (read-only if dataset imported) [x]
 
-Validate inputs, implement correct HTTP status codes
+Validate inputs, implement correct HTTP status codes [x]
 
 Rubric relevance:
 
