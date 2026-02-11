@@ -43,18 +43,6 @@ class UserOut(UserBase):
     id: int
 
     model_config = ConfigDict(from_attributes=True)
-
-
-# -- Exercises --
-
-class ExerciseOut(BaseModel):
-    id: int
-    name: str
-    primary_muscle: Optional[str]
-    secondary_muscle: Optional[str]
-    equipment: Optional[str]
-
-    model_config = ConfigDict(from_attributes=True)
         
 # -- Workouts --
 
@@ -72,25 +60,68 @@ class WorkoutOut(WorkoutBase):
     user_id: int
 
     model_config = ConfigDict(from_attributes=True)
+    
+# -- Muscles --
 
-# -- Exercise Logs --
+class MuscleOut(BaseModel):
+    id: int
+    name: str
+    
+    model_config = ConfigDict(from_attributes=True)
+    
 
-class ExerciseLogBase(BaseModel):
-    sets: int = Field(..., gt=0)
+# -- Equipment --
+
+class EquipmentOut(BaseModel):
+    id: int
+    name: str
+
+    model_config = ConfigDict(from_attributes=True)
+    
+
+# -- Exercises --
+
+class ExerciseOut(BaseModel):
+    id: int
+    name: str
+    equipment: EquipmentOut | None
+    primary_muscles: list[MuscleOut]
+    secondary_muscles: list[MuscleOut]
+
+    model_config = ConfigDict(from_attributes=True)
+    
+# -- Sets -- 
+    
+class SetBase(BaseModel):
     reps: int = Field(..., gt=0)
     weight: float = Field(..., ge=0)
 
-class ExerciseLogCreate(ExerciseLogBase):
+class SetCreate(SetBase):
+    pass
+
+class SetUpdate(BaseModel):
+    reps: Optional[int] = Field(None, gt=0)
+    weight: Optional[float] = Field(None, ge=0)
+
+class SetOut(SetBase):
+    id: int
+    model_config = ConfigDict(from_attributes=True)
+    
+# -- Exercise Logs --
+
+class ExerciseLogCreate(BaseModel):
     exercise_id: int
 
 class ExerciseLogUpdate(BaseModel):
-    sets: Optional[int] = Field(None, gt=0)
-    reps: Optional[int] = Field(None, gt=0)
-    weight: Optional[float] = Field(None, ge=0)
-    
-class ExerciseLogOut(ExerciseLogBase):
+    exercise_id: Optional[int] = None
+
+class ExerciseLogOut(BaseModel):
     id: int
     workout_id: int
     exercise: ExerciseOut
+    sets: List[SetOut]
 
     model_config = ConfigDict(from_attributes=True)
+
+    
+
