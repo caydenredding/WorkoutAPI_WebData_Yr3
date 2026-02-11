@@ -77,7 +77,7 @@ Day 8–10: Add analytics endpoints
 
 Tasks:
 
-Calculate PR (max weight) and volume per exercise
+Calculate PR (max weight) and volume per exercise [x]
 
 Implement /users/{id}/insights endpoint returning human-readable progress summaries
 
