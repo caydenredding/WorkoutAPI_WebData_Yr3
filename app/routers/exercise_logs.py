@@ -14,37 +14,24 @@ router = APIRouter()
     response_model=schemas.ExerciseLogOut,
     status_code=status.HTTP_201_CREATED,
     responses={
-        404: {"description": "Workout not found or Exercise not found"},
-    },
+        status.HTTP_404_NOT_FOUND: {"description": "Workout not found or Exercise not found"}
+        },
 )
-def create_exercise_log(
-    workout_id: int,
-    payload: schemas.ExerciseLogCreate,
-    db: Session = Depends(get_db),
-):
-    # 1) Ensure workout exists
+def create_exercise_log(workout_id: int, payload: schemas.ExerciseLogCreate, db: Session = Depends(get_db)):
     workout = db.query(models.WorkoutLog).filter(models.WorkoutLog.id == workout_id).first()
     if not workout:
-        raise HTTPException(status_code=404, detail="Workout not found")
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Workout not found")
 
-    # 2) Ensure exercise exists
     exercise = db.query(models.Exercise).filter(models.Exercise.id == payload.exercise_id).first()
     if not exercise:
-        raise HTTPException(status_code=404, detail="Exercise not found")
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Exercise not found")
 
-    # 3) Create log
-    log = models.ExerciseLog(
-        workout_id=workout_id,
-        exercise_id=payload.exercise_id,
-        sets=payload.sets,
-        reps=payload.reps,
-        weight=payload.weight,
-    )
-
+    log = models.ExerciseLog(workout_id=workout_id, exercise_id=payload.exercise_id)
     db.add(log)
     db.commit()
     db.refresh(log)
     return log
+
 
 
 # Get all exercise logs from a workout
@@ -52,7 +39,7 @@ def create_exercise_log(
     "/workouts/{workout_id}/exercise-logs",
     response_model=List[schemas.ExerciseLogOut],
     responses={
-        404: {"description": "Workout not found"},
+        status.HTTP_404_NOT_FOUND: {"description": "Workout not found"},
     },
 )
 def list_exercise_logs_for_workout(
@@ -64,11 +51,18 @@ def list_exercise_logs_for_workout(
     # Ensure workout exists
     workout = db.query(models.WorkoutLog).filter(models.WorkoutLog.id == workout_id).first()
     if not workout:
-        raise HTTPException(status_code=404, detail="Workout not found")
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Workout not found")
 
     logs = (
         db.query(models.ExerciseLog)
-        .options(joinedload(models.ExerciseLog.exercise))
+        .options(
+        joinedload(models.ExerciseLog.exercise)
+        .joinedload(models.Exercise.primary_muscles),
+        joinedload(models.ExerciseLog.exercise)
+        .joinedload(models.Exercise.secondary_muscles),
+        joinedload(models.ExerciseLog.exercise)
+        .joinedload(models.Exercise.equipment),
+        )
         .filter(models.ExerciseLog.workout_id == workout_id)
         .order_by(models.ExerciseLog.id)
         .offset(skip)
@@ -77,14 +71,13 @@ def list_exercise_logs_for_workout(
     )
     return logs
 
-
 # Update an exercise log
 @router.patch(
     "/exercise-logs/{exercise_log_id}",
     response_model=schemas.ExerciseLogOut,
     responses={
-        400: {"description": "No fields provided to update"},
-        404: {"description": "Exercise log not found"},
+        status.HTTP_400_BAD_REQUEST: {"description": "No fields provided to update"},
+        status.HTTP_404_NOT_FOUND: {"description": "Exercise log not found"},
     },
 )
 def update_exercise_log(
@@ -94,11 +87,11 @@ def update_exercise_log(
 ):
     log = db.query(models.ExerciseLog).filter(models.ExerciseLog.id == exercise_log_id).first()
     if not log:
-        raise HTTPException(status_code=404, detail="Exercise log not found")
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Exercise log not found")
 
     update_data = payload.model_dump(exclude_unset=True)
     if not update_data:
-        raise HTTPException(status_code=400, detail="No fields provided to update")
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="No fields provided to update")
 
     for field, value in update_data.items():
         setattr(log, field, value)
@@ -113,13 +106,13 @@ def update_exercise_log(
     "/exercise-logs/{exercise_log_id}",
     status_code=status.HTTP_204_NO_CONTENT,
     responses={
-        404: {"description": "Exercise log not found"},
+        status.HTTP_404_NOT_FOUND: {"description": "Exercise log not found"},
     },
 )
 def delete_exercise_log(exercise_log_id: int, db: Session = Depends(get_db)):
     log = db.query(models.ExerciseLog).filter(models.ExerciseLog.id == exercise_log_id).first()
     if not log:
-        raise HTTPException(status_code=404, detail="Exercise log not found")
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Exercise log not found")
 
     db.delete(log)
     db.commit()

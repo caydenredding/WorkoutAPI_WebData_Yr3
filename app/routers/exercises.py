@@ -1,5 +1,5 @@
-from fastapi import APIRouter, Depends, HTTPException, Query
-from sqlalchemy.orm import Session
+from fastapi import APIRouter, Depends, HTTPException, Query, status
+from sqlalchemy.orm import Session, joinedload
 from typing import List, Optional
 
 from app.database import get_db
@@ -12,7 +12,7 @@ router = APIRouter()
     "",
     response_model=List[schemas.ExerciseOut],
     responses={
-        200: {"description": "List of exercises"},
+        status.HTTP_200_OK: {"description": "List of exercises"},
     },
 )
 def list_exercises(
@@ -20,19 +20,24 @@ def list_exercises(
     skip: int = Query(0, ge=0),
     limit: int = Query(50, ge=1, le=200),
     q: Optional[str] = Query(None, description="Search by exercise name (case-insensitive)"),
-    equipment: Optional[str] = Query(None, description="Filter by equipment (exact match)"),
-    primary_muscle: Optional[str] = Query(None, description="Filter by primary muscle (exact match)"),
+    equipment_id: Optional[int] = Query(None, description="Filter by equipment (id)"),
+    primary_muscle_id: Optional[int] = Query(None, description="Filter by primary muscle (id)"),
 ):
-    query = db.query(models.Exercise)
+    query = db.query(models.Exercise).options(
+    joinedload(models.Exercise.primary_muscles),
+    joinedload(models.Exercise.secondary_muscles),
+    joinedload(models.Exercise.equipment),
+    )
 
     if q:
         query = query.filter(models.Exercise.name.ilike(f"%{q}%"))
 
-    if equipment:
-        query = query.filter(models.Exercise.equipment == equipment)
+    if equipment_id:
+        query = query.filter(models.Exercise.equipment_id == equipment_id)
 
-    if primary_muscle:
-        query = query.filter(models.Exercise.primary_muscle == primary_muscle)
+    if primary_muscle_id:
+        query = query.filter(models.Exercise.primary_muscles.any(models.Muscle.id == primary_muscle_id))
+
 
     exercises = (
         query.order_by(models.Exercise.id)
@@ -47,11 +52,11 @@ def list_exercises(
     "/{exercise_id}",
     response_model=schemas.ExerciseOut,
     responses={
-        404: {"description": "Exercise not found"},
+        status.HTTP_404_NOT_FOUND: {"description": "Exercise not found"},
     },
 )
 def get_exercise(exercise_id: int, db: Session = Depends(get_db)):
     exercise = db.query(models.Exercise).filter(models.Exercise.id == exercise_id).first()
     if not exercise:
-        raise HTTPException(status_code=404, detail="Exercise not found")
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Exercise not found")
     return exercise

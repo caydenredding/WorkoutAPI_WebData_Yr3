@@ -14,8 +14,8 @@ router = APIRouter()
     response_model=schemas.UserOut,
     status_code=status.HTTP_201_CREATED,
     responses={
-        400: {"description": "No fields provided to update"},
-        409: {"description": "Username already exists"},
+        status.HTTP_400_BAD_REQUEST: {"description": "No fields provided to update"},
+        status.HTTP_409_CONFLICT: {"description": "Username already exists"},
     }
 )
 def create_user(user: schemas.UserCreate, db: Session = Depends(get_db)):
@@ -55,7 +55,7 @@ def list_users(
     "/{user_id}",
     response_model=schemas.UserOut,
     responses={
-        404: {"description": "User not found"},
+        status.HTTP_404_NOT_FOUND: {"description": "User not found"},
     }
 )
 def get_user(user_id: int, db: Session = Depends(get_db)):
@@ -72,9 +72,9 @@ def get_user(user_id: int, db: Session = Depends(get_db)):
     "/{user_id}",
     response_model=schemas.UserOut,
     responses={
-        400: {"description": "No fields provided to update"},
-        404: {"description": "User not found"},
-        409: {"description": "Username already exists"},
+        status.HTTP_400_BAD_REQUEST: {"description": "No fields provided to update"},
+        status.HTTP_404_NOT_FOUND: {"description": "User not found"},
+        status.HTTP_409_CONFLICT: {"description": "Username already exists"},
     }
 )
 def update_user(
@@ -118,7 +118,7 @@ def update_user(
     "/{user_id}",
     status_code=status.HTTP_204_NO_CONTENT,
     responses={
-        404: {"description": "User not found"}
+        status.HTTP_404_NOT_FOUND: {"description": "User not found"}
     }
 )
 def delete_user(user_id: int, db: Session = Depends(get_db)):
