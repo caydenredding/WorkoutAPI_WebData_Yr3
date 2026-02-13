@@ -16,6 +16,7 @@ router = APIRouter()
     status_code=status.HTTP_201_CREATED,
     responses={
         status.HTTP_201_CREATED: {"description": "User successfully created"},
+        status.HTTP_400_BAD_REQUEST: {"description": "Invalid goal_id"},
         status.HTTP_409_CONFLICT: {"description": "Username already exists"},
     },
 )
@@ -23,7 +24,25 @@ def create_user(
     user: schemas.UserCreate,
     db: Session = Depends(get_db),
 ):
-    new_user = models.User(username=user.username)
+    # Validate goal if provided
+    if user.goal_id is not None:
+        goal_exists = (
+            db.query(models.Goal.id)
+            .filter(models.Goal.id == user.goal_id)
+            .first()
+        )
+        if not goal_exists:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="Invalid goal_id",
+            )
+
+    new_user = models.User(
+        username=user.username,
+        years_experience=user.years_experience or 0,
+        goal_id=user.goal_id,
+    )
+
     db.add(new_user)
 
     try:
@@ -37,6 +56,7 @@ def create_user(
 
     db.refresh(new_user)
     return new_user
+
 
 
 # Get list of users
@@ -100,7 +120,7 @@ def get_user(
     status_code=status.HTTP_200_OK,
     responses={
         status.HTTP_200_OK: {"description": "User successfully updated"},
-        status.HTTP_400_BAD_REQUEST: {"description": "No fields provided to update"},
+        status.HTTP_400_BAD_REQUEST: {"description": "No fields provided to update / Invalid goal_id"},
         status.HTTP_404_NOT_FOUND: {"description": "User not found"},
         status.HTTP_409_CONFLICT: {"description": "Username already exists"},
     },
@@ -110,11 +130,7 @@ def update_user(
     user_update: schemas.UserUpdate,
     db: Session = Depends(get_db),
 ):
-    user = (
-        db.query(models.User)
-        .filter(models.User.id == user_id)
-        .first()
-    )
+    user = db.query(models.User).filter(models.User.id == user_id).first()
 
     if not user:
         raise HTTPException(
@@ -130,6 +146,15 @@ def update_user(
             detail="No fields provided to update",
         )
 
+    # Validate goal_id if it is explicitly provided and not null
+    if "goal_id" in update_data and update_data["goal_id"] is not None:
+        goal_exists = db.query(models.Goal.id).filter(models.Goal.id == update_data["goal_id"]).first()
+        if not goal_exists:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="Invalid goal_id",
+            )
+
     for field, value in update_data.items():
         setattr(user, field, value)
 
@@ -144,6 +169,7 @@ def update_user(
 
     db.refresh(user)
     return user
+
 
 
 # Delete a user

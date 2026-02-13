@@ -22,11 +22,28 @@ class UserBase(BaseModel):
         return v
 
 class UserCreate(UserBase):
-    pass
+    years_experience: Optional[int] = Field(
+        None,
+        ge=0,
+        le=80,
+        description="Years of structured training experience (0–80)"
+    )
+    goal_id: Optional[int] = Field(
+        None,
+        ge=1,
+        description="Goal ID (optional)"
+    )
 
 class UserUpdate(BaseModel):
+    """
+    Single PATCH payload:
+    - omit fields to leave unchanged
+    - goal_id can be null to clear
+    """
     username: Optional[str] = None
-    
+    years_experience: Optional[int] = Field(None, ge=0, le=80)
+    goal_id: Optional[int] = Field(None, ge=1)
+
     @field_validator("username")
     @classmethod
     def validate_username(cls, v: Optional[str]) -> Optional[str]:
@@ -38,7 +55,9 @@ class UserUpdate(BaseModel):
         if len(v) > MAX_USERNAME_LEN:
             raise ValueError(f"username must be at most {MAX_USERNAME_LEN} characters")
         return v
+
     
+
 class UserOut(UserBase):
     id: int
 
