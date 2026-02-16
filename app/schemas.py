@@ -1,5 +1,5 @@
 from pydantic import BaseModel, ConfigDict, Field, field_validator
-from datetime import date
+from datetime import date as Date
 from typing import List, Optional, Literal
 
 MIN_USERNAME_LEN = 6
@@ -69,17 +69,39 @@ class GoalOut(BaseModel):
     name: str
 
     model_config = ConfigDict(from_attributes=True)
+    
+class WeighInCreate(BaseModel):
+    weight: float
+    date: Date
+    
+class WeighInOut(BaseModel):
+    id: int
+    user_id: int
+    weight: float = Field(..., gt=0, description="Bodyweight value (kg)")
+    date: Date
+
+    model_config = ConfigDict(from_attributes=True)
+    
+class WeighInListOut(BaseModel):
+    user_id: int
+    count: int
+    weigh_ins: List[WeighInOut]
+    
+
+class WeighInUpdate(BaseModel):
+    weight: Optional[float] = Field(None, gt=0, description="Bodyweight value (kg)")
+    date: Optional[Date] = None
         
 # -- Workouts --
 
 class WorkoutBase(BaseModel):
-    date: date
+    date: Date
 
 class WorkoutCreate(WorkoutBase):
     pass
 
 class WorkoutUpdate(BaseModel):
-    date: Optional[date]
+    date: Optional[Date] = None
 
 class WorkoutOut(WorkoutBase):
     id: int
@@ -157,7 +179,7 @@ class ExerciseMaxSetVolumeOut(BaseModel):
     max_set_volume: float
     reps: int
     weight: float
-    date: date
+    date: Date
 
     model_config = ConfigDict(from_attributes=True)
 
@@ -188,8 +210,8 @@ class WorkoutsLast30DaysOut(BaseModel):
 
 class LastSevenDayGapOut(BaseModel):
     user_id: int
-    last_gap_start_date: Optional[date]  # first day of the 7-day no-workout window
-    last_gap_end_date: Optional[date]    # last day of that window (start + 6)
+    last_gap_start_date: Optional[Date]  # first day of the 7-day no-workout window
+    last_gap_end_date: Optional[Date]    # last day of that window (start + 6)
 
     model_config = ConfigDict(from_attributes=True)
     
@@ -200,8 +222,8 @@ class LastSevenDayGapOut(BaseModel):
 # ----------------------------
 
 class PeriodOut(BaseModel):
-    from_date: date
-    to_date: date
+    from_date: Date
+    to_date: Date
 
 
 class PRItemOut(BaseModel):
@@ -226,8 +248,8 @@ class WeeklyStreakOut(BaseModel):
 
 
 class LastSevenDayGapOut(BaseModel):
-    last_gap_start_date: Optional[date] = None
-    last_gap_end_date: Optional[date] = None
+    last_gap_start_date: Optional[Date] = None
+    last_gap_end_date: Optional[Date] = None
 
 
 # ----------------------------

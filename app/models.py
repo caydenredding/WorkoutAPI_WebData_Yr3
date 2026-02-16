@@ -1,4 +1,4 @@
-from sqlalchemy import Column, Integer, String, ForeignKey, Date, Float, Table
+from sqlalchemy import Column, Integer, String, ForeignKey, Date, Float, Table, func
 from sqlalchemy.orm import relationship
 from app.database import Base
 
@@ -45,11 +45,16 @@ class User(Base):
     username = Column(String, nullable=False, unique=True)
     goal_id = Column(Integer, ForeignKey("goals.id"), nullable=True)
     years_experience = Column(Integer, nullable=True, default=0)
-    account_created = Column(Date, nullable=False)
+    account_created = Column(Date, nullable=False, server_default=func.current_date())
     
     workoutPlans = relationship("WorkoutPlan", back_populates="user", cascade="all, delete-orphan")
     workouts = relationship("WorkoutLog", back_populates="user", cascade="all, delete-orphan")
     goal = relationship("Goal", back_populates="user")
+    weigh_ins = relationship(
+    "WeighIn",
+    back_populates="user",
+    cascade="all, delete-orphan",
+)
     
 class Goal(Base):
     __tablename__ = "goals"
@@ -57,6 +62,20 @@ class Goal(Base):
     name = Column(String, nullable=False, unique=True)
     
     user = relationship("User", back_populates="goal")
+    
+class WeighIn(Base):
+    __tablename__ = "weigh_ins"
+
+    id = Column(Integer, primary_key=True, index=True)
+
+    user_id = Column(Integer, ForeignKey("users.id", ondelete="CASCADE"), nullable=False)
+
+    weight = Column(Float, nullable=False)
+
+    date = Column(Date, nullable=False, index=True)
+
+    # relationship back to user
+    user = relationship("User", back_populates="weigh_ins")
 
 class WorkoutLog(Base):
     __tablename__ = "workout_logs"
