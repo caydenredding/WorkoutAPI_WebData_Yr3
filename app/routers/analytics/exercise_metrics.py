@@ -86,7 +86,7 @@ def max_set_volume_by_exercise(
         {
             "exercise_id": r.exercise_id,
             "exercise_name": r.exercise_name,
-            "max_set_volume": float(r.max_set_volume),
+            "max_set_volume": round(float(r.max_set_volume), 1),
             "reps": r.reps,
             "weight": float(r.weight),
             "date": r.date,
