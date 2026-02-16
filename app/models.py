@@ -123,6 +123,7 @@ class SetLog(Base):
 
     reps = Column(Integer, nullable=False)
     weight = Column(Float, nullable=False)
+    rir = Column(Integer, nullable=True)  # Reps in Reserve, optional
 
     exercise_log = relationship("ExerciseLog", back_populates="sets")
     

@@ -143,6 +143,7 @@ class ExerciseOut(BaseModel):
 class SetBase(BaseModel):
     reps: int = Field(..., gt=0)
     weight: float = Field(..., ge=0)
+    rir: Optional[int] = Field(None, ge=0, le=10, description="Reps in Reserve (0–10)")
 
 class SetCreate(SetBase):
     pass
@@ -150,6 +151,7 @@ class SetCreate(SetBase):
 class SetUpdate(BaseModel):
     reps: Optional[int] = Field(None, gt=0)
     weight: Optional[float] = Field(None, ge=0)
+    rir: Optional[int] = Field(None, ge=0, le=10, description="Reps in Reserve (0–10)")
 
 class SetOut(SetBase):
     id: int

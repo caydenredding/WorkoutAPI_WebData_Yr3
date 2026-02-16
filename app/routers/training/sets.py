@@ -33,6 +33,7 @@ def create_set(
         exercise_log_id=exercise_log_id,
         reps=payload.reps,
         weight=payload.weight,
+        rir=payload.rir,
     )
     db.add(s)
     db.commit()
