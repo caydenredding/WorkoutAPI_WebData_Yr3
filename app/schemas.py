@@ -1,6 +1,6 @@
 from pydantic import BaseModel, ConfigDict, Field, field_validator
 from datetime import date
-from typing import List, Optional
+from typing import List, Optional, Literal
 
 MIN_USERNAME_LEN = 6
 MAX_USERNAME_LEN = 20
@@ -60,6 +60,13 @@ class UserUpdate(BaseModel):
 
 class UserOut(UserBase):
     id: int
+
+    model_config = ConfigDict(from_attributes=True)
+    
+
+class GoalOut(BaseModel):
+    id: int
+    name: str
 
     model_config = ConfigDict(from_attributes=True)
         
@@ -185,5 +192,73 @@ class LastSevenDayGapOut(BaseModel):
     last_gap_end_date: Optional[date]    # last day of that window (start + 6)
 
     model_config = ConfigDict(from_attributes=True)
+    
+# -- AI Summary Schemas --
+
+# ----------------------------
+# Basic building blocks
+# ----------------------------
+
+class PeriodOut(BaseModel):
+    from_date: date
+    to_date: date
+
+
+class PRItemOut(BaseModel):
+    exercise_id: int
+    exercise_name: str
+    type: Literal["e1rm", "max_set_volume"]
+    new: float
+    previous: Optional[float] = None
+    formula: Optional[Literal["epley", "brzycki"]] = None
+
+
+class MetricComparisonOut(BaseModel):
+    current: float | int
+    previous: float | int
+    delta: float | int
+    pct_change: Optional[float] = None
+
+
+class WeeklyStreakOut(BaseModel):
+    weekly_goal: int
+    current_weekly_streak: int
+
+
+class LastSevenDayGapOut(BaseModel):
+    last_gap_start_date: Optional[date] = None
+    last_gap_end_date: Optional[date] = None
+
+
+# ----------------------------
+# Improvements section
+# ----------------------------
+
+class ImprovementsOut(BaseModel):
+    previous_period: PeriodOut
+    sessions: MetricComparisonOut
+    unique_training_days: MetricComparisonOut
+    total_sets: MetricComparisonOut
+    total_volume: MetricComparisonOut
+
+
+# ----------------------------
+# Main facts schema
+# ----------------------------
+
+class WeeklyFactsOut(BaseModel):
+    user_id: int
+    period: PeriodOut
+
+    sessions: int
+    unique_training_days: int
+    total_sets: int
+    total_volume: float
+
+    prs: List[PRItemOut]
+
+    improvements_vs_previous_period: ImprovementsOut
+    weekly_streak: WeeklyStreakOut
+    last_7_day_gap: LastSevenDayGapOut
     
 
