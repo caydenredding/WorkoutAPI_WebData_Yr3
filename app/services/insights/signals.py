@@ -83,7 +83,6 @@ def build_signals(db: Session, user_id: int, as_of: date) -> dict:
         "acwr": acwr,
         "fatigue_trend_14d": trend_14d,
 
-        "workouts_in_range": workouts_last_7d,
         "workouts_last_7d": workouts_last_7d,
         "workouts_last_30d": workouts_last_30d,
         "adherence_ratio_30d": adherence_ratio_30d,

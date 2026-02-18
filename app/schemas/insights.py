@@ -52,7 +52,6 @@ class Signals(BaseModel):
     fatigue_trend_14d: float
 
     # Attendance / Adherence
-    workouts_in_range: int
     workouts_last_7d: int
     workouts_last_30d: int
     adherence_ratio_30d: Optional[float] = None

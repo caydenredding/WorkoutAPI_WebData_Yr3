@@ -2,6 +2,7 @@ from __future__ import annotations
 from typing import List, Tuple, Optional
 
 from app.schemas.insights import Signals, UserState, InsightCard, Action
+from app.services.insights import signals
 
 
 def _clamp01(x: float) -> float:
@@ -51,6 +52,74 @@ def recommend_deload_percentage(signals: Signals) -> int:
 
     return int(pct)
 
+def goal_params(goal_name: str | None) -> dict:
+    g = (goal_name or "").lower()
+
+    # defaults (general fitness)
+    params = {
+        "fatigue_trend_elevated": 0.25,
+        "fatigue_trend_spike": 0.60,
+        "acwr_elevated": 1.30,
+        "acwr_spike": 1.55,
+        "hard_sets_high": 0.40,
+        "avg_rir_too_easy": 3.25,
+        "prs_required": True,   # whether "stalling" should consider PR absence strongly
+    }
+
+    if "strength" in g:
+        params.update({
+            "fatigue_trend_elevated": 0.20,
+            "fatigue_trend_spike": 0.50,
+            "acwr_elevated": 1.25,
+            "acwr_spike": 1.45,
+            "hard_sets_high": 0.35,
+            "avg_rir_too_easy": 3.0,
+            "prs_required": True,
+        })
+    elif "hypertrophy" in g:
+        params.update({
+            "fatigue_trend_elevated": 0.30,
+            "fatigue_trend_spike": 0.70,
+            "acwr_elevated": 1.35,
+            "acwr_spike": 1.65,
+            "hard_sets_high": 0.45,
+            "avg_rir_too_easy": 3.25,
+            "prs_required": True,
+        })
+    elif "fat loss" in g:
+        params.update({
+            "fatigue_trend_elevated": 0.35,
+            "fatigue_trend_spike": 0.80,
+            "acwr_elevated": 1.40,
+            "acwr_spike": 1.75,
+            "hard_sets_high": 0.45,
+            "avg_rir_too_easy": 3.5,
+            "prs_required": False,
+        })
+    elif "endurance" in g:
+        params.update({
+            "fatigue_trend_elevated": 0.40,
+            "fatigue_trend_spike": 0.85,
+            "acwr_elevated": 1.45,
+            "acwr_spike": 1.80,
+            "hard_sets_high": 0.50,
+            "avg_rir_too_easy": 3.75,
+            "prs_required": False,
+        })
+    elif "athletic" in g:
+        params.update({
+            "fatigue_trend_elevated": 0.25,
+            "fatigue_trend_spike": 0.60,
+            "acwr_elevated": 1.30,
+            "acwr_spike": 1.55,
+            "hard_sets_high": 0.40,
+            "avg_rir_too_easy": 3.25,
+            "prs_required": True,
+        })
+
+    return params
+
+
 
 
 def classify(signals: Signals) -> Tuple[UserState, List[InsightCard]]:
@@ -65,21 +134,111 @@ def classify(signals: Signals) -> Tuple[UserState, List[InsightCard]]:
     fatigue_spike = (acwr is not None and acwr > 1.5) or (fatigue_trend > 0.6)
 
     prs_recent = signals.prs_last_21d >= 1
-    stalling = signals.prs_last_21d == 0  # v1; later use trend/plateau rules
-
-    adherence_ratio = signals.adherence_ratio_30d
-    adherence_low = (adherence_ratio is not None and adherence_ratio < 0.7)
-    adherence_high = (adherence_ratio is not None and adherence_ratio > 1.15)
-
+    p = goal_params(signals.goal_name)
+    
     # RIR-derived
     has_rir = _has_rir(signals)
     avg_rir = signals.avg_rir_last_7d
     hard_rate = signals.hard_sets_rate_7d  # fraction RIR<=1
-    too_many_hard_sets = has_rir and (hard_rate is not None) and (hard_rate >= 0.40)
-    not_training_hard = has_rir and (avg_rir is not None) and (avg_rir >= 3.25)
 
+    fatigue_elevated = ((signals.acwr is not None and signals.acwr > p["acwr_elevated"])
+                        or (signals.fatigue_trend_14d > p["fatigue_trend_elevated"]))
+
+    fatigue_spike = ((signals.acwr is not None and signals.acwr > p["acwr_spike"])
+                    or (signals.fatigue_trend_14d > p["fatigue_trend_spike"]))
+
+    too_many_hard_sets = (has_rir and hard_rate is not None and hard_rate >= p["hard_sets_high"])
+    not_training_hard = (has_rir and avg_rir is not None and avg_rir >= p["avg_rir_too_easy"])
+
+    stalling = (signals.prs_last_21d == 0) if p["prs_required"] else False
+
+
+    adherence_ratio = signals.adherence_ratio_30d
+    adherence_low = (adherence_ratio is not None and adherence_ratio < 0.7)
+    adherence_high = (adherence_ratio is not None and adherence_ratio > 1.15)
+    
     # --- Candidate evaluation (simple scoring) ---
     candidates: List[tuple[str, float, List[str], List[InsightCard]]] = []
+    
+    # 0) No recent training data
+    if signals.workouts_last_30d == 0:
+        state = UserState(
+            id="no_recent_data",
+            confidence=0.95,
+            reasons=["No workouts logged in the last 30 days."],
+        )
+
+        cards = [
+            InsightCard(
+                id="no_data",
+                title="No recent training data",
+                severity="warning",
+                metrics={
+                    "workouts_last_30d": signals.workouts_last_30d
+                },
+                evidence=["There are no workouts recorded in the last 30 days."],
+                actions=[
+                    Action(
+                        type="resume_training",
+                        label="Start with 2-3 light sessions this week to rebuild consistency",
+                        target="overall",
+                        params={"recommended_sessions": 3, "intensity": "moderate"}
+                    ),
+                    Action(
+                        type="baseline_week",
+                        label="Use this week as a baseline to re-establish training capacity",
+                        target="overall",
+                        params={}
+                    ),
+                ],
+            )
+        ]
+        return state, cards # short-circuit other rules since we have no data to apply them to
+    
+    # Low but non-zero exposure
+    if (
+        signals.workouts_last_30d > 0
+        and signals.adherence_ratio_30d is not None
+        and signals.adherence_ratio_30d < 0.5
+    ):
+        state = UserState(
+            id="low_training_exposure",
+            confidence=0.85,
+            reasons=["Training frequency is very low relative to target."],
+        )
+
+        cards = [
+            InsightCard(
+                id="low_exposure",
+                title="Training frequency is too low for consistent progress",
+                severity="warning",
+                metrics={
+                    "workouts_last_30d": signals.workouts_last_30d,
+                    "adherence_ratio_30d": signals.adherence_ratio_30d,
+                    "target_days_per_week": signals.target_days_per_week,
+                },
+                evidence=[
+                    "Progress requires consistent stimulus; current frequency is below effective levels."
+                ],
+                actions=[
+                    Action(
+                        type="increase_frequency",
+                        label="Increase to at least 2-3 sessions per week",
+                        target="overall",
+                        params={"recommended_sessions": 3},
+                    ),
+                    Action(
+                        type="short_sessions",
+                        label="Keep sessions short (30-45 minutes) to build momentum",
+                        target="overall",
+                        params={},
+                    ),
+                ],
+            )
+        ]
+
+        return state, cards
+
 
     # 1) Inconsistent adherence
     if adherence_low:
