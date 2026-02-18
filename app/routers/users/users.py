@@ -4,7 +4,8 @@ from sqlalchemy.exc import IntegrityError
 from typing import List
 
 from app.database import get_db
-from app import models, schemas
+from app import models
+from app.schemas.users import UserCreate, UserOut, UserUpdate
 
 router = APIRouter()
 
@@ -12,7 +13,7 @@ router = APIRouter()
 # Create a new user
 @router.post(
     "/",
-    response_model=schemas.UserOut,
+    response_model=UserOut,
     status_code=status.HTTP_201_CREATED,
     responses={
         status.HTTP_201_CREATED: {"description": "User successfully created"},
@@ -21,7 +22,7 @@ router = APIRouter()
     },
 )
 def create_user(
-    user: schemas.UserCreate,
+    user: UserCreate,
     db: Session = Depends(get_db),
 ):
     # Validate goal if provided
@@ -62,7 +63,7 @@ def create_user(
 # Get list of users
 @router.get(
     "/",
-    response_model=List[schemas.UserOut],
+    response_model=List[UserOut],
     status_code=status.HTTP_200_OK,
     responses={
         status.HTTP_200_OK: {"description": "List of users returned"},
@@ -87,7 +88,7 @@ def list_users(
 # Get a specific user
 @router.get(
     "/{user_id}",
-    response_model=schemas.UserOut,
+    response_model=UserOut,
     status_code=status.HTTP_200_OK,
     responses={
         status.HTTP_200_OK: {"description": "User retrieved"},
@@ -116,7 +117,7 @@ def get_user(
 # Update a user
 @router.patch(
     "/{user_id}",
-    response_model=schemas.UserOut,
+    response_model=UserOut,
     status_code=status.HTTP_200_OK,
     responses={
         status.HTTP_200_OK: {"description": "User successfully updated"},
@@ -127,7 +128,7 @@ def get_user(
 )
 def update_user(
     user_id: int,
-    user_update: schemas.UserUpdate,
+    user_update: UserUpdate,
     db: Session = Depends(get_db),
 ):
     user = db.query(models.User).filter(models.User.id == user_id).first()

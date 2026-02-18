@@ -3,7 +3,8 @@ from sqlalchemy.orm import Session
 from typing import List
 
 from app.database import get_db
-from app import models, schemas
+from app import models
+from app.schemas.training import WorkoutCreate, WorkoutOut, WorkoutUpdate
 
 router = APIRouter(prefix="/workouts")
 
@@ -11,7 +12,7 @@ router = APIRouter(prefix="/workouts")
 # Create a workout for a user
 @router.post(
     "/users/{user_id}",
-    response_model=schemas.WorkoutOut,
+    response_model=WorkoutOut,
     status_code=status.HTTP_201_CREATED,
     responses={
         status.HTTP_201_CREATED: {"description": "Workout successfully created"},
@@ -20,7 +21,7 @@ router = APIRouter(prefix="/workouts")
 )
 def create_workout(
     user_id: int,
-    workout: schemas.WorkoutCreate,
+    workout: WorkoutCreate,
     db: Session = Depends(get_db),
 ):
     user = db.query(models.User).filter(models.User.id == user_id).first()
@@ -45,7 +46,7 @@ def create_workout(
 # List workouts for a user
 @router.get(
     "/users/{user_id}",
-    response_model=List[schemas.WorkoutOut],
+    response_model=List[WorkoutOut],
     status_code=status.HTTP_200_OK,
     responses={
         status.HTTP_200_OK: {"description": "List of workouts returned"},
@@ -80,7 +81,7 @@ def list_user_workouts(
 # Get a single workout
 @router.get(
     "/{workout_id}",
-    response_model=schemas.WorkoutOut,
+    response_model=WorkoutOut,
     status_code=status.HTTP_200_OK,
     responses={
         status.HTTP_200_OK: {"description": "Workout retrieved"},
@@ -106,7 +107,7 @@ def get_workout(workout_id: int, db: Session = Depends(get_db)):
 # Update a workout
 @router.patch(
     "/{workout_id}",
-    response_model=schemas.WorkoutOut,
+    response_model=WorkoutOut,
     status_code=status.HTTP_200_OK,
     responses={
         status.HTTP_200_OK: {"description": "Workout successfully updated"},
@@ -116,7 +117,7 @@ def get_workout(workout_id: int, db: Session = Depends(get_db)):
 )
 def update_workout(
     workout_id: int,
-    workout_update: schemas.WorkoutUpdate,
+    workout_update: WorkoutUpdate,
     db: Session = Depends(get_db),
 ):
     workout = (

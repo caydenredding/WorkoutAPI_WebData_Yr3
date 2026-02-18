@@ -4,7 +4,8 @@ from sqlalchemy import func, cast, Float, desc
 from typing import List, Literal, Optional
 
 from app.database import get_db
-from app import models, schemas
+from app import models
+from app.schemas.analytics import ExerciseMaxSetVolumeOut, ExerciseBest1RMOut
 
 router = APIRouter(prefix="/users/{user_id}/exercises")
 
@@ -20,7 +21,7 @@ def ensure_user(db: Session, user_id: int) -> None:
 
 @router.get(
     "/max-set-volume",
-    response_model=List[schemas.ExerciseMaxSetVolumeOut],
+    response_model=List[ExerciseMaxSetVolumeOut],
     status_code=status.HTTP_200_OK,
     responses={
         status.HTTP_200_OK: {"description": "Max set volume per exercise returned"},
@@ -97,7 +98,7 @@ def max_set_volume_by_exercise(
 
 @router.get(
     "/best-1rm",
-    response_model=List[schemas.ExerciseBest1RMOut],
+    response_model=List[ExerciseBest1RMOut],
     status_code=status.HTTP_200_OK,
     responses={
         status.HTTP_200_OK: {"description": "Best estimated 1RM per exercise returned"},

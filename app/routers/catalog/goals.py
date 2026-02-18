@@ -3,14 +3,16 @@ from sqlalchemy.orm import Session
 from typing import List
 
 from app.database import get_db
-from app import models, schemas
+from app import models
+
+from app.schemas.catalog import GoalOut
 
 router = APIRouter(prefix="/goals")
 
 
 @router.get(
     "/",
-    response_model=List[schemas.GoalOut],
+    response_model=List[GoalOut],
     status_code=status.HTTP_200_OK,
     responses={
         status.HTTP_200_OK: {"description": "List of goals returned"},

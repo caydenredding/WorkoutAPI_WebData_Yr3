@@ -3,14 +3,15 @@ from sqlalchemy.orm import Session
 from typing import List
 
 from app.database import get_db
-from app import models, schemas
+from app import models
+from app.schemas.training import SetCreate, SetOut, SetUpdate
 
 router = APIRouter(prefix="/sets")
 
 
 @router.post(
     "/exercise-logs/{exercise_log_id}",
-    response_model=schemas.SetOut,
+    response_model=SetOut,
     status_code=status.HTTP_201_CREATED,
     responses={
         status.HTTP_201_CREATED: {"description": "Set successfully created"},
@@ -19,7 +20,7 @@ router = APIRouter(prefix="/sets")
 )
 def create_set(
     exercise_log_id: int,
-    payload: schemas.SetCreate,
+    payload: SetCreate,
     db: Session = Depends(get_db),
 ):
     log = db.query(models.ExerciseLog).filter(models.ExerciseLog.id == exercise_log_id).first()
@@ -43,7 +44,7 @@ def create_set(
 
 @router.get(
     "/exercise-logs/{exercise_log_id}",
-    response_model=List[schemas.SetOut],
+    response_model=List[SetOut],
     status_code=status.HTTP_200_OK,
     responses={
         status.HTTP_200_OK: {"description": "List of sets returned"},
@@ -75,7 +76,7 @@ def list_sets(
 
 @router.patch(
     "/{set_id}",
-    response_model=schemas.SetOut,
+    response_model=SetOut,
     status_code=status.HTTP_200_OK,
     responses={
         status.HTTP_200_OK: {"description": "Set successfully updated"},
@@ -85,7 +86,7 @@ def list_sets(
 )
 def update_set(
     set_id: int,
-    payload: schemas.SetUpdate,
+    payload: SetUpdate,
     db: Session = Depends(get_db),
 ):
     s = db.query(models.SetLog).filter(models.SetLog.id == set_id).first()

@@ -5,7 +5,8 @@ from typing import Optional
 from datetime import date, timedelta
 
 from app.database import get_db
-from app import models, schemas
+from app import models
+from app.schemas.analytics import WeeklyStreakOut, WorkoutsLast30DaysOut, LastSevenDayGapOut
 
 router = APIRouter(prefix="/users/{user_id}")
 
@@ -21,7 +22,7 @@ def ensure_user(db: Session, user_id: int) -> None:
 
 @router.get(
     "/weekly-streak",
-    response_model=schemas.WeeklyStreakOut,
+    response_model=WeeklyStreakOut,
     status_code=status.HTTP_200_OK,
     responses={
         status.HTTP_200_OK: {"description": "Weekly streak returned"},
@@ -77,7 +78,7 @@ def get_weekly_streak(
 
 @router.get(
     "/workouts-last-30-days",
-    response_model=schemas.WorkoutsLast30DaysOut,
+    response_model=WorkoutsLast30DaysOut,
     status_code=status.HTTP_200_OK,
     responses={
         status.HTTP_200_OK: {"description": "Workouts in the last 30 days returned"},
@@ -110,7 +111,7 @@ def workouts_last_30_days(
 
 @router.get(
     "/last-week-missed",
-    response_model=schemas.LastSevenDayGapOut,
+    response_model=LastSevenDayGapOut,
     status_code=status.HTTP_200_OK,
     responses={
         status.HTTP_200_OK: {"description": "Most recent 7-day gap returned (or nulls if none)"},

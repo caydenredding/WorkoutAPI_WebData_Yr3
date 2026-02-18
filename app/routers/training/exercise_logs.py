@@ -3,7 +3,8 @@ from sqlalchemy.orm import Session, joinedload
 from typing import List
 
 from app.database import get_db
-from app import models, schemas
+from app import models
+from app.schemas.training import ExerciseLogCreate, ExerciseLogOut, ExerciseLogUpdate
 
 router = APIRouter(prefix="/exercise-logs")
 
@@ -11,7 +12,7 @@ router = APIRouter(prefix="/exercise-logs")
 # Create a new exercise log
 @router.post(
     "/workouts/{workout_id}",
-    response_model=schemas.ExerciseLogOut,
+    response_model=ExerciseLogOut,
     status_code=status.HTTP_201_CREATED,
     responses={
         status.HTTP_201_CREATED: {"description": "Exercise log successfully created"},
@@ -20,7 +21,7 @@ router = APIRouter(prefix="/exercise-logs")
 )
 def create_exercise_log(
     workout_id: int,
-    payload: schemas.ExerciseLogCreate,
+    payload: ExerciseLogCreate,
     db: Session = Depends(get_db),
 ):
     workout = (
@@ -60,7 +61,7 @@ def create_exercise_log(
 # Get all exercise logs from a workout
 @router.get(
     "/workouts/{workout_id}",
-    response_model=List[schemas.ExerciseLogOut],
+    response_model=List[ExerciseLogOut],
     status_code=status.HTTP_200_OK,
     responses={
         status.HTTP_200_OK: {"description": "List of exercise logs returned"},
@@ -107,7 +108,7 @@ def list_exercise_logs_for_workout(
 # Update an exercise log
 @router.patch(
     "/{exercise_log_id}",
-    response_model=schemas.ExerciseLogOut,
+    response_model=ExerciseLogOut,
     status_code=status.HTTP_200_OK,
     responses={
         status.HTTP_200_OK: {"description": "Exercise log successfully updated"},
@@ -117,7 +118,7 @@ def list_exercise_logs_for_workout(
 )
 def update_exercise_log(
     exercise_log_id: int,
-    payload: schemas.ExerciseLogUpdate,
+    payload: ExerciseLogUpdate,
     db: Session = Depends(get_db),
 ):
     log = (

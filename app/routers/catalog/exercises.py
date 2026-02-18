@@ -3,14 +3,16 @@ from sqlalchemy.orm import Session, joinedload
 from typing import List, Optional
 
 from app.database import get_db
-from app import models, schemas
+from app import models
+
+from app.schemas.catalog import ExerciseOut
 
 router = APIRouter(prefix="/exercises")
 
 
 @router.get(
     "",
-    response_model=List[schemas.ExerciseOut],
+    response_model=List[ExerciseOut],
     status_code=status.HTTP_200_OK,
     responses={
         status.HTTP_200_OK: {"description": "List of exercises returned"},
@@ -64,7 +66,7 @@ def list_exercises(
 
 @router.get(
     "/{exercise_id}",
-    response_model=schemas.ExerciseOut,
+    response_model=ExerciseOut,
     status_code=status.HTTP_200_OK,
     responses={
         status.HTTP_200_OK: {"description": "Exercise retrieved"},

@@ -3,14 +3,15 @@ from sqlalchemy.orm import Session
 from typing import List
 
 from app.database import get_db
-from app import models, schemas
+from app import models
+from app.schemas.catalog import MuscleOut
 
 router = APIRouter(prefix="/muscles")
 
 
 @router.get(
     "",
-    response_model=List[schemas.MuscleOut],
+    response_model=List[MuscleOut],
     status_code=status.HTTP_200_OK,
     responses={
         status.HTTP_200_OK: {"description": "List of muscles returned"},

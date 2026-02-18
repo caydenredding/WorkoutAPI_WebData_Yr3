@@ -2,15 +2,16 @@ from fastapi import APIRouter, Depends, HTTPException, Query, status
 from sqlalchemy.orm import Session
 
 from app.database import get_db
-from app import models, schemas
+from app import models
+from app.schemas.users import WeighInCreate, WeighInOut, WeighInUpdate, WeighInListOut
 
 router = APIRouter()
 
 @router.post(
     "/{user_id}/weigh-ins",
-    response_model=schemas.WeighInOut,
+    response_model=WeighInOut,
 )
-def create_weigh_in(user_id: int, payload: schemas.WeighInCreate, db: Session = Depends(get_db)):
+def create_weigh_in(user_id: int, payload: WeighInCreate, db: Session = Depends(get_db)):
 
     weigh_in = models.WeighIn(
         user_id=user_id,
@@ -26,7 +27,7 @@ def create_weigh_in(user_id: int, payload: schemas.WeighInCreate, db: Session = 
 
 @router.get(
     "/weigh-ins/{weigh_in_id}",
-    response_model=schemas.WeighInOut,
+    response_model=WeighInOut,
     status_code=status.HTTP_200_OK,
     responses={
         status.HTTP_200_OK: {"description": "Weigh-in retrieved"},
@@ -53,7 +54,7 @@ def get_weigh_in(
 
 @router.get(
     "/{user_id}/weigh-ins",
-    response_model=schemas.WeighInListOut,
+    response_model=WeighInListOut,
     status_code=status.HTTP_200_OK,
     responses={
         status.HTTP_200_OK: {"description": "Most recent weigh-ins returned"},
@@ -97,7 +98,7 @@ def get_recent_weigh_ins(
     
 @router.patch(
     "/weigh-ins/{weigh_in_id}",
-    response_model=schemas.WeighInOut,
+    response_model=WeighInOut,
     status_code=status.HTTP_200_OK,
     responses={
         status.HTTP_200_OK: {"description": "Weigh-in successfully updated"},
@@ -107,7 +108,7 @@ def get_recent_weigh_ins(
 )
 def update_weigh_in(
     weigh_in_id: int,
-    payload: schemas.WeighInUpdate,
+    payload: WeighInUpdate,
     db: Session = Depends(get_db),
 ):
     weigh_in = db.query(models.WeighIn).filter(models.WeighIn.id == weigh_in_id).first()
