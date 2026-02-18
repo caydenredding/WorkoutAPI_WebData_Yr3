@@ -15,42 +15,42 @@ Add:
 
 ## Folder Structure
 
-- [ ] Create `app/routers/ai/`
-- [ ] Create `app/services/ai/`
-- [ ] Add AI router group in `main.py`
-- [ ] Confirm consistent imports (`from app.routers...`)
+- [x] Create `app/routers/ai/`
+- [x] Create `app/services/ai/`
+- [x] Add AI router group in `main.py`
+- [x] Confirm consistent imports (`from app.routers...`)
 ---
 
 # 🗄 Phase 1 — Database Changes
 
 ## Reset Database (if required)
 
-- [ ] Delete existing SQLite DB file
-- [ ] Recreate tables using `Base.metadata.create_all()`
-- [ ] Confirm schema is clean
+- [x] Delete existing SQLite DB file
+- [x] Recreate tables using `Base.metadata.create_all()`
+- [x] Confirm schema is clean
 
 ## Add New Models
 
 ### WorkoutPlan
 
-- [ ] `id`
-- [ ] `user_id`
-- [ ] `created_at`
-- [ ] `days_per_week`
-- [ ] `goal`
-- [ ] `plan_json` (JSON or Text)
-- [ ] `plan_text` (optional)
-- [ ] `is_active` (optional)
+- [x] `id`
+- [x] `user_id`
+- [x] `created_at`
+- [x] `days_per_week`
+- [x] `goal`
+- [x] `plan_json` (JSON or Text)
+- [x] `plan_text` (optional)
+- [x] `is_active` (optional)
 
 ### WeeklySummary
 
-- [ ] `id`
-- [ ] `user_id`
-- [ ] `week_start`
-- [ ] `week_end`
-- [ ] `created_at`
-- [ ] `facts_json`
-- [ ] `summary_text`
+- [x] `id`
+- [x] `user_id`
+- [x] `week_start`
+- [x] `week_end`
+- [x] `created_at`
+- [x] `facts_json`
+- [x] `summary_text`
 
 ---
 
