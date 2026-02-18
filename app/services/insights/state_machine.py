@@ -119,9 +119,6 @@ def goal_params(goal_name: str | None) -> dict:
 
     return params
 
-
-
-
 def classify(signals: Signals) -> Tuple[UserState, List[InsightCard]]:
     goal = _goal_lower(signals)
 
