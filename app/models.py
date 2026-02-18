@@ -43,11 +43,11 @@ class User(Base):
     __tablename__ = "users"
     id = Column(Integer, primary_key=True, index=True)
     username = Column(String, nullable=False, unique=True)
-    goal_id = Column(Integer, ForeignKey("goals.id"), nullable=True)
-    years_experience = Column(Integer, nullable=True, default=0)
+    goal_id = Column(Integer, ForeignKey("goals.id"), nullable=False, default=3) # Default to "General Fitness"
+    target_days_per_week = Column(Integer, nullable=False, default=3)
+    years_experience = Column(Integer, nullable=False, default=0)
     account_created = Column(Date, nullable=False, server_default=func.current_date())
     
-    workoutPlans = relationship("WorkoutPlan", back_populates="user", cascade="all, delete-orphan")
     workouts = relationship("WorkoutLog", back_populates="user", cascade="all, delete-orphan")
     goal = relationship("Goal", back_populates="user")
     weigh_ins = relationship(
@@ -67,11 +67,8 @@ class WeighIn(Base):
     __tablename__ = "weigh_ins"
 
     id = Column(Integer, primary_key=True, index=True)
-
     user_id = Column(Integer, ForeignKey("users.id", ondelete="CASCADE"), nullable=False)
-
     weight = Column(Float, nullable=False)
-
     date = Column(Date, nullable=False, index=True)
 
     # relationship back to user
@@ -126,27 +123,6 @@ class SetLog(Base):
     rir = Column(Integer, nullable=True)  # Reps in Reserve, optional
 
     exercise_log = relationship("ExerciseLog", back_populates="sets")
-    
-class WorkoutPlan(Base):
-    __tablename__ = "workout_plans"
-    id = Column(Integer, primary_key=True, index=True)
-    user_id = Column(Integer, ForeignKey("users.id", ondelete="CASCADE"), nullable=False)
-    name = Column(String, nullable=False)
-    days_per_week = Column(Integer, nullable=False)
-    created_at = Column(Date, nullable=False)
-    plan_json = Column(String, nullable=False)  # Store the plan as a JSON string
-    is_active = Column(Integer, nullable=False, default=1)  # 1 for active, 0 for inactive
-    user = relationship("User", back_populates="workoutPlans")
-    
-class SummaryLog(Base):
-    __tablename__ = "summary_logs"
-    id = Column(Integer, primary_key=True, index=True)
-    user_id = Column(Integer, ForeignKey("users.id", ondelete="CASCADE"), nullable=False)
-    date_from = Column(Date, nullable=False)
-    date_to = Column(Date, nullable=False)
-    date_created = Column(Date, nullable=False)
-    facts_json = Column(String, nullable=False)  # Store the facts as a JSON string
-    summary_text = Column(String, nullable=False)  # Store the summary as a string
     
     
     

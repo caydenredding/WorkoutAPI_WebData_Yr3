@@ -12,18 +12,21 @@ def seed_users(db: Session) -> None:
             username="cayden01",
             years_experience=3,
             goal_id=goal_by_name["General Fitness"],
+            target_days_per_week=4,
             account_created=date.today(),
         ),
         models.User(
             username="alice01",
             years_experience=1,
             goal_id=goal_by_name["Fat Loss"],
+            target_days_per_week=5,
             account_created=date.today(),
         ),
         models.User(
             username="bobby01",
             years_experience=6,
             goal_id=goal_by_name["Strength"],
+            target_days_per_week=3,
             account_created=date.today(),
         ),
     ]

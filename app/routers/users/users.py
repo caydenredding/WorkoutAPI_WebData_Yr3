@@ -37,11 +37,19 @@ def create_user(
                 status_code=status.HTTP_400_BAD_REQUEST,
                 detail="Invalid goal_id",
             )
+    
+    # Validate target_days_per_week
+    if user.target_days_per_week is not None and (user.target_days_per_week < 1 or user.target_days_per_week > 7):
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="target_days_per_week must be between 1 and 7",
+        )
 
     new_user = models.User(
         username=user.username,
         years_experience=user.years_experience or 0,
         goal_id=user.goal_id,
+        target_days_per_week=user.target_days_per_week or 3,
     )
 
     db.add(new_user)
@@ -154,6 +162,14 @@ def update_user(
             raise HTTPException(
                 status_code=status.HTTP_400_BAD_REQUEST,
                 detail="Invalid goal_id",
+            )
+    
+    # Validate target_days_per_week if it is explicitly provided and not null
+    if "target_days_per_week" in update_data and update_data["target_days_per_week"] is not None:
+        if update_data["target_days_per_week"] < 1 or update_data["target_days_per_week"] > 7:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="target_days_per_week must be between 1 and 7",
             )
 
     for field, value in update_data.items():

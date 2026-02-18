@@ -33,6 +33,12 @@ class UserCreate(UserBase):
         ge=1,
         description="Goal ID (optional)"
     )
+    target_days_per_week: Optional[int] = Field(
+        None,
+        ge=1,
+        le=7,
+        description="Target training days per week (1–7)"
+    )
 
 class UserUpdate(BaseModel):
     """
@@ -43,6 +49,7 @@ class UserUpdate(BaseModel):
     username: Optional[str] = None
     years_experience: Optional[int] = Field(None, ge=0, le=80)
     goal_id: Optional[int] = Field(None, ge=1)
+    target_days_per_week: Optional[int] = Field(None, ge=1, le=7)
 
     @field_validator("username")
     @classmethod
@@ -60,6 +67,10 @@ class UserUpdate(BaseModel):
 
 class UserOut(UserBase):
     id: int
+    years_experience: int
+    goal_id: int
+    target_days_per_week: int
+    account_created: Date
 
     model_config = ConfigDict(from_attributes=True)
 
