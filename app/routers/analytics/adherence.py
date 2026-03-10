@@ -7,6 +7,7 @@ from datetime import date, timedelta
 from app.database import get_db
 from app import models
 from app.schemas.analytics import WeeklyStreakOut, WorkoutsLast30DaysOut, LastSevenDayGapOut
+from app.security import require_self_or_admin
 
 router = APIRouter(prefix="/users/{user_id}")
 
@@ -14,30 +15,16 @@ router = APIRouter(prefix="/users/{user_id}")
 def ensure_user(db: Session, user_id: int) -> None:
     exists = db.query(models.User.id).filter(models.User.id == user_id).first()
     if not exists:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail="User not found",
-        )
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="User not found")
 
 
-@router.get(
-    "/weekly-streak",
-    response_model=WeeklyStreakOut,
-    status_code=status.HTTP_200_OK,
-    responses={
-        status.HTTP_200_OK: {"description": "Weekly streak returned"},
-        status.HTTP_404_NOT_FOUND: {"description": "User not found"},
-    },
-)
+@router.get("/weekly-streak", response_model=WeeklyStreakOut, status_code=status.HTTP_200_OK)
 def get_weekly_streak(
     user_id: int,
     db: Session = Depends(get_db),
+    _current=Depends(require_self_or_admin),
     weekly_goal: int = Query(3, ge=1, le=14),
 ):
-    """
-    Current consecutive-week streak where workouts in the ISO week >= weekly_goal.
-    Week is ISO week (Mon-Sun).
-    """
     ensure_user(db, user_id)
 
     workout_dates = (
@@ -61,7 +48,6 @@ def get_weekly_streak(
 
     streak = 0
     key = current_key
-
     while True:
         if counts.get(key, 0) >= weekly_goal:
             streak += 1
@@ -76,23 +62,12 @@ def get_weekly_streak(
     return {"user_id": user_id, "weekly_goal": weekly_goal, "current_weekly_streak": streak}
 
 
-@router.get(
-    "/workouts-last-30-days",
-    response_model=WorkoutsLast30DaysOut,
-    status_code=status.HTTP_200_OK,
-    responses={
-        status.HTTP_200_OK: {"description": "Workouts in the last 30 days returned"},
-        status.HTTP_404_NOT_FOUND: {"description": "User not found"},
-    },
-)
+@router.get("/workouts-last-30-days", response_model=WorkoutsLast30DaysOut, status_code=status.HTTP_200_OK)
 def workouts_last_30_days(
     user_id: int,
     db: Session = Depends(get_db),
+    _current=Depends(require_self_or_admin),
 ):
-    """
-    Number of workouts (WorkoutLog rows) in the last 30 days.
-    (Counts workouts, not unique days.)
-    """
     ensure_user(db, user_id)
 
     today = date.today()
@@ -109,23 +84,12 @@ def workouts_last_30_days(
     return {"user_id": user_id, "days": 30, "workouts_count": int(count or 0)}
 
 
-@router.get(
-    "/last-week-missed",
-    response_model=LastSevenDayGapOut,
-    status_code=status.HTTP_200_OK,
-    responses={
-        status.HTTP_200_OK: {"description": "Most recent 7-day gap returned (or nulls if none)"},
-        status.HTTP_404_NOT_FOUND: {"description": "User not found"},
-    },
-)
+@router.get("/last-week-missed", response_model=LastSevenDayGapOut, status_code=status.HTTP_200_OK)
 def last_week_missed(
     user_id: int,
     db: Session = Depends(get_db),
+    _current=Depends(require_self_or_admin),
 ):
-    """
-    Returns the most recent 7-day window (start..start+6) with NO workout logged.
-    If user has never had a 7-day gap, returns nulls.
-    """
     ensure_user(db, user_id)
 
     workout_dates = (

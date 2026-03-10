@@ -2,7 +2,7 @@ from sqlalchemy import Column, Integer, String, ForeignKey, Date, Float, Table, 
 from sqlalchemy.orm import relationship
 from app.database import Base
 
-# Assosiation Tables
+# Association Tables
 exercise_primary_muscles = Table(
     "exercise_primary_muscles",
     Base.metadata,
@@ -17,12 +17,12 @@ exercise_secondary_muscles = Table(
     Column("muscle_id", ForeignKey("muscles.id", ondelete="CASCADE"), primary_key=True),
 )
 
-# Table of all exercises
+
 class Exercise(Base):
     __tablename__ = "exercises"
     id = Column(Integer, primary_key=True, index=True)
     name = Column(String, nullable=False)
-    # Can be updated in future to be many-to-many table for muscle groups
+
     primary_muscles = relationship(
         "Muscle",
         secondary=exercise_primary_muscles,
@@ -34,35 +34,45 @@ class Exercise(Base):
         secondary=exercise_secondary_muscles,
         lazy="joined"
     )
-    
+
     equipment_id = Column(Integer, ForeignKey("equipment.id"), nullable=True)
-    
     equipment = relationship("Equipment")
-    
+
+
 class User(Base):
     __tablename__ = "users"
     id = Column(Integer, primary_key=True, index=True)
+
     username = Column(String, nullable=False, unique=True)
-    goal_id = Column(Integer, ForeignKey("goals.id"), nullable=False, default=3) # Default to "General Fitness"
+
+    # NEW: account auth
+    hashed_password = Column(String, nullable=False)
+
+    # NEW: role-based authorisation
+    role = Column(String, nullable=False, default="user")  # "user" | "admin"
+
+    goal_id = Column(Integer, ForeignKey("goals.id"), nullable=False, default=3)  # default General Fitness
     target_days_per_week = Column(Integer, nullable=False, default=3)
     years_experience = Column(Integer, nullable=False, default=0)
     account_created = Column(Date, nullable=False, server_default=func.current_date())
-    
+
     workouts = relationship("WorkoutLog", back_populates="user", cascade="all, delete-orphan")
     goal = relationship("Goal", back_populates="user")
     weigh_ins = relationship(
-    "WeighIn",
-    back_populates="user",
-    cascade="all, delete-orphan",
-)
-    
+        "WeighIn",
+        back_populates="user",
+        cascade="all, delete-orphan",
+    )
+
+
 class Goal(Base):
     __tablename__ = "goals"
     id = Column(Integer, primary_key=True, index=True)
     name = Column(String, nullable=False, unique=True)
-    
+
     user = relationship("User", back_populates="goal")
-    
+
+
 class WeighIn(Base):
     __tablename__ = "weigh_ins"
 
@@ -71,43 +81,48 @@ class WeighIn(Base):
     weight = Column(Float, nullable=False)
     date = Column(Date, nullable=False, index=True)
 
-    # relationship back to user
     user = relationship("User", back_populates="weigh_ins")
+
 
 class WorkoutLog(Base):
     __tablename__ = "workout_logs"
     id = Column(Integer, primary_key=True, index=True)
     user_id = Column(Integer, ForeignKey("users.id", ondelete="CASCADE"), nullable=False)
     date = Column(Date, nullable=False)
-    
+
     user = relationship("User", back_populates="workouts")
     exercise_logs = relationship("ExerciseLog", back_populates="workout", cascade="all, delete-orphan")
-    
+
+
 class ExerciseLog(Base):
     __tablename__ = "exercise_logs"
     id = Column(Integer, primary_key=True, index=True)
     workout_id = Column(Integer, ForeignKey("workout_logs.id", ondelete="CASCADE"), nullable=False)
     exercise_id = Column(Integer, ForeignKey("exercises.id"), nullable=False)
+
     sets = relationship(
-    "SetLog",
-    back_populates="exercise_log",
-    cascade="all, delete-orphan",
-    passive_deletes=True,
-)
+        "SetLog",
+        back_populates="exercise_log",
+        cascade="all, delete-orphan",
+        passive_deletes=True,
+    )
+
     workout = relationship("WorkoutLog", back_populates="exercise_logs")
     exercise = relationship("Exercise")
-    
-# Table for each individual muscle
+
+
 class Muscle(Base):
     __tablename__ = "muscles"
     id = Column(Integer, primary_key=True, index=True)
     name = Column(String, nullable=False, unique=True)
-    
+
+
 class Equipment(Base):
     __tablename__ = "equipment"
     id = Column(Integer, primary_key=True, index=True)
     name = Column(String, nullable=False, unique=True)
-    
+
+
 class SetLog(Base):
     __tablename__ = "set_logs"
 
@@ -120,9 +135,6 @@ class SetLog(Base):
 
     reps = Column(Integer, nullable=False)
     weight = Column(Float, nullable=False)
-    rir = Column(Integer, nullable=True)  # Reps in Reserve, optional
+    rir = Column(Integer, nullable=True)
 
     exercise_log = relationship("ExerciseLog", back_populates="sets")
-    
-    
-    

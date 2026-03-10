@@ -6,6 +6,7 @@ from typing import List, Literal, Optional
 from app.database import get_db
 from app import models
 from app.schemas.analytics import ExerciseMaxSetVolumeOut, ExerciseBest1RMOut
+from app.security import require_self_or_admin
 
 router = APIRouter(prefix="/users/{user_id}/exercises")
 
@@ -13,24 +14,14 @@ router = APIRouter(prefix="/users/{user_id}/exercises")
 def ensure_user(db: Session, user_id: int) -> None:
     exists = db.query(models.User.id).filter(models.User.id == user_id).first()
     if not exists:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail="User not found",
-        )
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="User not found")
 
 
-@router.get(
-    "/max-set-volume",
-    response_model=List[ExerciseMaxSetVolumeOut],
-    status_code=status.HTTP_200_OK,
-    responses={
-        status.HTTP_200_OK: {"description": "Max set volume per exercise returned"},
-        status.HTTP_404_NOT_FOUND: {"description": "User not found"},
-    },
-)
+@router.get("/max-set-volume", response_model=List[ExerciseMaxSetVolumeOut], status_code=status.HTTP_200_OK)
 def max_set_volume_by_exercise(
     user_id: int,
     db: Session = Depends(get_db),
+    _current=Depends(require_self_or_admin),
     exercise_id: Optional[int] = Query(None, ge=1),
 ):
     ensure_user(db, user_id)
@@ -96,18 +87,11 @@ def max_set_volume_by_exercise(
     ]
 
 
-@router.get(
-    "/best-1rm",
-    response_model=List[ExerciseBest1RMOut],
-    status_code=status.HTTP_200_OK,
-    responses={
-        status.HTTP_200_OK: {"description": "Best estimated 1RM per exercise returned"},
-        status.HTTP_404_NOT_FOUND: {"description": "User not found"},
-    },
-)
+@router.get("/best-1rm", response_model=List[ExerciseBest1RMOut], status_code=status.HTTP_200_OK)
 def best_1rm_by_exercise(
     user_id: int,
     db: Session = Depends(get_db),
+    _current=Depends(require_self_or_admin),
     formula: Literal["epley", "brzycki"] = Query("epley"),
     exercise_id: Optional[int] = Query(None, ge=1),
     max_reps: int = Query(12, ge=1, le=30),

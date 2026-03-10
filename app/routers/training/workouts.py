@@ -5,66 +5,48 @@ from typing import List
 from app.database import get_db
 from app import models
 from app.schemas.training import WorkoutCreate, WorkoutOut, WorkoutUpdate
+from app.security import require_self_or_admin, get_current_user
 
 router = APIRouter(prefix="/workouts")
 
 
-# Create a workout for a user
 @router.post(
     "/users/{user_id}",
     response_model=WorkoutOut,
     status_code=status.HTTP_201_CREATED,
-    responses={
-        status.HTTP_201_CREATED: {"description": "Workout successfully created"},
-        status.HTTP_404_NOT_FOUND: {"description": "User not found"},
-    },
 )
 def create_workout(
     user_id: int,
     workout: WorkoutCreate,
     db: Session = Depends(get_db),
+    _current=Depends(require_self_or_admin),
 ):
     user = db.query(models.User).filter(models.User.id == user_id).first()
     if not user:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail="User not found",
-        )
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="User not found")
 
-    new_workout = models.WorkoutLog(
-        user_id=user_id,
-        date=workout.date,
-    )
-
+    new_workout = models.WorkoutLog(user_id=user_id, date=workout.date)
     db.add(new_workout)
     db.commit()
     db.refresh(new_workout)
-
     return new_workout
 
 
-# List workouts for a user
 @router.get(
     "/users/{user_id}",
     response_model=List[WorkoutOut],
     status_code=status.HTTP_200_OK,
-    responses={
-        status.HTTP_200_OK: {"description": "List of workouts returned"},
-        status.HTTP_404_NOT_FOUND: {"description": "User not found"},
-    },
 )
 def list_user_workouts(
     user_id: int,
     db: Session = Depends(get_db),
+    _current=Depends(require_self_or_admin),
     skip: int = Query(0, ge=0),
     limit: int = Query(50, ge=1, le=200),
 ):
     user = db.query(models.User).filter(models.User.id == user_id).first()
     if not user:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail="User not found",
-        )
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="User not found")
 
     workouts = (
         db.query(models.WorkoutLog)
@@ -74,102 +56,75 @@ def list_user_workouts(
         .limit(limit)
         .all()
     )
-
     return workouts
 
 
-# Get a single workout
 @router.get(
     "/{workout_id}",
     response_model=WorkoutOut,
     status_code=status.HTTP_200_OK,
-    responses={
-        status.HTTP_200_OK: {"description": "Workout retrieved"},
-        status.HTTP_404_NOT_FOUND: {"description": "Workout not found"},
-    },
 )
-def get_workout(workout_id: int, db: Session = Depends(get_db)):
-    workout = (
-        db.query(models.WorkoutLog)
-        .filter(models.WorkoutLog.id == workout_id)
-        .first()
-    )
-
+def get_workout(
+    workout_id: int,
+    db: Session = Depends(get_db),
+    current_user=Depends(get_current_user),
+):
+    workout = db.query(models.WorkoutLog).filter(models.WorkoutLog.id == workout_id).first()
     if not workout:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail="Workout not found",
-        )
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Workout not found")
+
+    if current_user.role != "admin" and workout.user_id != current_user.id:
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Not permitted")
 
     return workout
 
 
-# Update a workout
 @router.patch(
     "/{workout_id}",
     response_model=WorkoutOut,
     status_code=status.HTTP_200_OK,
-    responses={
-        status.HTTP_200_OK: {"description": "Workout successfully updated"},
-        status.HTTP_400_BAD_REQUEST: {"description": "No fields provided to update"},
-        status.HTTP_404_NOT_FOUND: {"description": "Workout not found"},
-    },
 )
 def update_workout(
     workout_id: int,
     workout_update: WorkoutUpdate,
     db: Session = Depends(get_db),
+    current_user=Depends(get_current_user),
 ):
-    workout = (
-        db.query(models.WorkoutLog)
-        .filter(models.WorkoutLog.id == workout_id)
-        .first()
-    )
-
+    workout = db.query(models.WorkoutLog).filter(models.WorkoutLog.id == workout_id).first()
     if not workout:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail="Workout not found",
-        )
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Workout not found")
+
+    if current_user.role != "admin" and workout.user_id != current_user.id:
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Not permitted")
 
     update_data = workout_update.model_dump(exclude_unset=True)
-
     if not update_data:
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail="No fields provided to update",
-        )
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="No fields provided to update")
 
     for field, value in update_data.items():
         setattr(workout, field, value)
 
     db.commit()
     db.refresh(workout)
-
     return workout
 
 
-# Delete a workout
 @router.delete(
     "/{workout_id}",
     status_code=status.HTTP_204_NO_CONTENT,
-    responses={
-        status.HTTP_204_NO_CONTENT: {"description": "Workout successfully deleted"},
-        status.HTTP_404_NOT_FOUND: {"description": "Workout not found"},
-    },
 )
-def delete_workout(workout_id: int, db: Session = Depends(get_db)):
-    workout = (
-        db.query(models.WorkoutLog)
-        .filter(models.WorkoutLog.id == workout_id)
-        .first()
-    )
-
+def delete_workout(
+    workout_id: int,
+    db: Session = Depends(get_db),
+    current_user=Depends(get_current_user),
+):
+    workout = db.query(models.WorkoutLog).filter(models.WorkoutLog.id == workout_id).first()
     if not workout:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail="Workout not found",
-        )
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Workout not found")
+
+    if current_user.role != "admin" and workout.user_id != current_user.id:
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Not permitted")
 
     db.delete(workout)
     db.commit()
+    return
