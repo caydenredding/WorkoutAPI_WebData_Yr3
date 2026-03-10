@@ -233,7 +233,6 @@ def seed_workouts(
     start_date = today - timedelta(weeks=weeks)
 
     for user in users:
-        # If you later store days_per_week on the user or active plan, swap here.
         days_per_week = default_days_per_week
         day_types = _choose_split(days_per_week)
         daily_p = _session_probability(days_per_week)
